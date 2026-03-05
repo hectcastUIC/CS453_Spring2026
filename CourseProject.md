@@ -136,7 +136,7 @@ mpirun -n 8 ./build/ngs_mpi --graph outputs/graph.json --part outputs/part.json 
 ```
 ## Submission Dealine
 
-Thursday, April, 16 at 10AM by submitting the URL to your Github repository via the posted Teams assignment.
+Thursday, April, 16 at 10AM by submitting the URL to your Github repository via the posted Teams assignment. Make sure that you add the TA as the collaborator on your repo using his email as the ID: rvarde2@uic.edu.
 
 ## Deliverables
 
