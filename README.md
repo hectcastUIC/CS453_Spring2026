@@ -1,45 +1,80 @@
-# NetGameSim to MPI Distributed Algorithms Project
-
-CS 453: Introduction to Parallel and Distributed Processing  
-Spring 2026
+# CS 453 MPI Graph Project
 
 ## Overview
 
-This project builds a distributed MPI application that operates on synthetic network graphs generated with NetGameSim. The system supports:
+This project runs distributed graph algorithms using MPI.
 
-- connected weighted graph generation
-- graph partitioning across MPI ranks
-- distributed leader election
-- distributed shortest paths using Dijkstra
-- metrics collection and reproducible experiments
+Each process (rank) owns part of the graph and communicates with others when needed.
 
-The goal is to simulate a distributed graph-processing workflow where each MPI rank owns a subset of graph nodes rather than mapping one node directly to one process.
+Algorithms:
 
-## Project Goals
+* Leader election
+* Shortest path (Dijkstra-style)
 
-This repository implements the following pipeline:
+---
 
-1. Generate a connected graph using NetGameSim
-2. Assign positive edge weights
-3. Partition graph nodes across MPI ranks
-4. Run distributed leader election
-5. Run distributed Dijkstra shortest path
-6. Record logs, runtime, message counts, and experiment summaries
+## Build
 
-## Repository Structure
+```bash
+cmake -S mpi_runtime -B build
+cmake --build build
+```
 
-```text
-.
-├── netgamesim/              # Upstream or forked NetGameSim code
-├── tools/
-│   ├── graph_export/        # Graph generation / export utilities
-│   └── partition/           # Graph partitioning utilities
-├── mpi_runtime/
-│   ├── include/             # Shared headers
-│   ├── src/                 # MPI runtime and algorithm implementations
-│   └── CMakeLists.txt       # Build configuration
-├── configs/                 # Example configurations
-├── experiments/             # Scripts for reproducible runs
-├── outputs/                 # Generated graphs, partitions, logs
-├── REPORT.md                # Experiment report
-└── README.md
+---
+
+## Generate graph (NetGameSim)
+
+```bash
+./tools/graph_export/run.sh configs/netgamesim.conf outputs/graph_ngs.txt
+```
+
+This:
+
+* runs NetGameSim
+* generates a graph with a fixed seed
+* converts it to weighted format
+* saves metadata for reproducibility
+
+---
+
+## Partition graph
+
+```bash
+./tools/partition/run.sh outputs/graph_ngs.txt --ranks 4 --out outputs/part.txt
+```
+
+---
+
+## Run (leader election)
+
+```bash
+mpirun -n 4 ./build/ngs_mpi \
+  --algo leader \
+  --graph outputs/graph_ngs.txt \
+  --part outputs/part.txt \
+  --rounds 20
+```
+
+---
+
+## Run (shortest path)
+
+```bash
+mpirun -n 4 ./build/ngs_mpi \
+  --algo dijkstra \
+  --graph outputs/graph_ngs.txt \
+  --part outputs/part.txt \
+  --rounds 20 \
+  --source 0
+```
+
+---
+
+## Notes
+
+* Graphs are generated using NetGameSim with a fixed seed
+* DOT output is imported and converted to weighted graph format
+* Results include runtime, iterations, and message statistics
+* Works with multiple ranks (tested with 2, 4, 8)
+
+---

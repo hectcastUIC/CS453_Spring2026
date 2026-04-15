@@ -1,0 +1,4 @@
+source=NetGameSim
+config_file=configs/netgamesim.conf
+seed=123
+dot_file=outputs/netgamesim/outputs/netgamesim/Graph_20260415_010928.ngs.ngs.dot
