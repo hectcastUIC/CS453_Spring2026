@@ -2,16 +2,29 @@
 
 ## Overview
 
-This project runs distributed graph algorithms using MPI.
+This project implements distributed graph algorithms using MPI.
 
-Each process (rank) owns part of the graph and communicates with others when needed.
+Each process (rank) owns a subset of nodes in the graph. Local computation is done within the rank, and communication across partitions is handled using MPI.
 
 Algorithms:
 
 * Leader election
 * Shortest path (Dijkstra-style)
 
----
+
+## Requirements
+
+Run on Linux / WSL (Ubuntu recommended).
+
+Install dependencies:
+
+```bash
+sudo apt update
+sudo apt install -y build-essential cmake openmpi-bin libopenmpi-dev openjdk-17-jdk scala
+```
+
+Install sbt if not installed (required for NetGameSim).
+
 
 ## Build
 
@@ -20,32 +33,35 @@ cmake -S mpi_runtime -B build
 cmake --build build
 ```
 
----
 
-## Generate graph (NetGameSim)
+## Generate Graph (NetGameSim)
 
 ```bash
 ./tools/graph_export/run.sh configs/netgamesim.conf outputs/graph_ngs.txt
 ```
 
-This:
+This step:
 
-* runs NetGameSim
-* generates a graph with a fixed seed
-* converts it to weighted format
-* saves metadata for reproducibility
+* runs NetGameSim to generate a graph
+* exports the graph in DOT format
+* converts it into a weighted graph
+* saves seed and metadata for reproducibility
 
----
+Note:
 
-## Partition graph
+* The script may print warnings after graph generation, but the output graph file will still be created.
+
+
+## Partition Graph
 
 ```bash
 ./tools/partition/run.sh outputs/graph_ngs.txt --ranks 4 --out outputs/part.txt
 ```
 
----
+Each rank is assigned a subset of nodes.
 
-## Run (leader election)
+
+## Run Leader Election
 
 ```bash
 mpirun -n 4 ./build/ngs_mpi \
@@ -55,9 +71,8 @@ mpirun -n 4 ./build/ngs_mpi \
   --rounds 20
 ```
 
----
 
-## Run (shortest path)
+## Run Shortest Path
 
 ```bash
 mpirun -n 4 ./build/ngs_mpi \
@@ -68,13 +83,21 @@ mpirun -n 4 ./build/ngs_mpi \
   --source 0
 ```
 
----
+
+## Running with More Ranks
+
+For 8 ranks on a local machine:
+
+```bash
+mpirun --oversubscribe -n 8 ./build/ngs_mpi ...
+```
+
 
 ## Notes
 
 * Graphs are generated using NetGameSim with a fixed seed
-* DOT output is imported and converted to weighted graph format
-* Results include runtime, iterations, and message statistics
-* Works with multiple ranks (tested with 2, 4, 8)
+* DOT output is imported and converted into a weighted graph
+* The seed is saved to ensure reproducibility
+* Metrics include runtime, iterations, messages, and bytes
+* Tested with 2, 4, and 8 ranks
 
----
